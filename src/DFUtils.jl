@@ -9,6 +9,11 @@ export complete,
 realtype,
 toReal
 
+"""
+    complete(df, cols...; replace_missing = missing)
+
+Creates a `DataFrame` that has rows all combinations of `cols...`. Optionally fill missing values in other columns with `replace_missing`.
+"""
 function complete(df, cols...; replace_missing = missing)
     T = eltype(cols)
     dfo = Iterators.product([unique(df[:, col]) for col in cols]...) |> DataFrame
@@ -49,6 +54,11 @@ realtype(m::Missing, r = true) = Missing
 
 realtype(t::T, r = true) where T = T
 
+"""
+    realtype(v; replace_string = true)
+
+Finds a subtype of `Real` that `v` can be converted to. Automatically handles `missing`s in vectors and optionally treats `String`s that cannot be parsed to any `Real` with `missing`
+"""
 function realtype(v::Vector; replace_string = true) 
     T = Int
     for e in v
@@ -58,6 +68,8 @@ function realtype(v::Vector; replace_string = true)
 end
 
 toReal(::Type{T}, v::V, r=true) where {T<:Union{Integer, AbstractFloat}, V<:Union{Integer, AbstractFloat}} = convert(T,v)
+
+toReal(::Type{T}, v::S, r) where {T<: AbstractString, S<: AbstractString} = r ? missing : v
 
 function toReal(::Type{T}, v::S, r) where T<: Union{Integer, AbstractFloat} where S<:AbstractString
     if r
@@ -98,8 +110,13 @@ function toReal(::Type{T}, s::S, r) where T<:Integer where S<:AbstractString
     end
 end
 
+"""
+    toReal(v; replace_string = true, threads = length(v) > 500)
+
+Converts `v` to a `Vector{T}` where `T <: Real`. Automatically adds `Union{T, Missing}` if necessary and optionally replaces `Strings`s that cannot be parsed with `missing`.
+"""
 function toReal(v::Vector; replace_string = true, threads = length(v)>500)
-    op = v |> Map(x -> toReal(realtype(x), x, replace_string))
+    op = v |> Map(x -> toReal(realtype(x, replace_string), x, replace_string))
     if threads
         return tcollect(op)
     else

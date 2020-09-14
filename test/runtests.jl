@@ -3,9 +3,9 @@ using Test
 using DataFrames
 
 @testset "DFUtils.jl" begin
-    df = DataFrame(g1 = [1,2,1], g2 = ["a", "a", "b"], v = [1, 2, 3])
-    @test isequal(complete(df, :g1, :g2).v, [1,2,3,missing])
-    @test complete(df, :g1, :g2; replace_missing = 4).v == [1,2,3,4] 
+    df = DataFrame(day = [1,2,1], group = ["a", "a", "b"], value = [1, 2, 3])
+    @test isequal(complete(df, :day, :group).value, [1,2,3,missing])
+    @test complete(df, :day, :group; replace_missing = 4).value == [1,2,3,4] 
 
     @test toReal([1, 1., 0]) isa Array{Int}
     @test toReal(["1", "1.0", "1."]) isa Array{Int}
