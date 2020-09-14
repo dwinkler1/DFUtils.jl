@@ -3,6 +3,10 @@ uuid = "f5eb988d-82e1-498f-b360-bbd92a0181ed"
 authors = ["Daniel Winkler <danielw2904@disroot.org> and contributors"]
 version = "0.1.0"
 
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+
 [compat]
 julia = "1.5"
 
