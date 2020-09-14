@@ -4,8 +4,12 @@ authors = ["Daniel Winkler <danielw2904@disroot.org> and contributors"]
 version = "0.1.0"
 
 [deps]
+BangBang = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
 Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
 julia = "1.5"

@@ -1,9 +1,13 @@
 module DFUtils
-using DataFrames, Parsers
+using DataFrames,
+Parsers,
+Missings,
+#BangBang,
+Transducers
 
 export complete, 
-    mintype,
-    tonumeric!
+realtype,
+toReal
 
 function complete(df, cols...; replace_missing = missing)
     T = eltype(cols)
@@ -18,55 +22,91 @@ function complete(df, cols...; replace_missing = missing)
     return dfo
 end
 
-function mintype(s::String)
+function realtype(s::S, r) where S <: AbstractString
     s = strip(s)
+    o = Parsers.tryparse(Int, s)
+    !isnothing(o) && return Int
+    o = Parsers.tryparse(BigInt, s)
+    !isnothing(o) && return BigInt
     p = Parsers.tryparse(Float64, s) 
     if isnothing(p)
-        return String
+        return r ? Missing : S
     else
-        return mintype(p)
+        return realtype(p)
     end
 end
 
 
-function mintype(n::T) where T <: AbstractFloat
+function realtype(n::T, r = true) where T <: Union{Integer, AbstractFloat} 
     if round(n) == n
-        return Int
+        return T <: Union{BigFloat, BigInt} ? BigInt : Int
     else
         return T
     end
 end
 
-mintype(i::T) where T <: Signed = i > typemax(Int) ? BigInt : T
+realtype(m::Missing, r = true) = Missing
 
-mintype(t::T) where T = T
+realtype(t::T, r = true) where T = T
 
-function mintype(v::Vector) 
+function realtype(v::Vector; replace_string = true) 
     T = Int
     for e in v
-        T = promote_type(T, mintype(e))
+        T = promote_type(T, realtype(e, replace_string))
     end
     return T
 end
 
-tonumeric(::Type{T}, v::V) where {T<:Number, V<:Number} = convert(T,v)
-tonumeric(::Type{T}, v::String) where T<:Number = parse(T, v)
-tonumeric(::Type{T}, v::Missing) where T = missing
-function tonumeric(::Type{T}, v::String) where T<:Integer
-    o = Parsers.tryparse(T, v)
+toReal(::Type{T}, v::V, r=true) where {T<:Union{Integer, AbstractFloat}, V<:Union{Integer, AbstractFloat}} = convert(T,v)
+
+function toReal(::Type{T}, v::S, r) where T<: Union{Integer, AbstractFloat} where S<:AbstractString
+    if r
+        o = Parsers.tryparse(T, v)
+        isnothing(o) ? missing : o
+    else
+        return parse(T, v)
+    end
+end
+
+toReal(::Type{Real}, v, r) = toReal(realtype(v), v, r)
+
+function toReal(::Type{T}, v::S, r) where T<: BigFloat where S<:AbstractString
+    if r
+        try
+            o = parse(T, v)
+            return o
+        catch e 
+            return missing
+        end
+    else
+        return parse(T, v)
+    end
+end
+
+toReal(::Type{T}, v::Missing, r = true) where T = missing
+toReal(::Type{Missing}, v, r = true) = missing
+toReal(::Type{Missing}, v::Missing, r = true) = missing
+
+function toReal(::Type{T}, s::S, r) where T<:Integer where S<:AbstractString
+    o = Parsers.tryparse(T, s)
     if !isnothing(o)
         return o
     else
-        f = parse(Float64, v)
-        i = tonumeric(T, f)
+        f = T <: BigInt ? toReal(BigFloat, s, r) : toReal(Float64, s, r)
+        i = toReal(T, f)
         return i
     end
 end
-function tonumeric!(::Type{T}, v::Vector) where T
-    for (i,e) in enumerate(v)
-       @inbounds v[i] = tonumeric(T, e)
+
+function toReal(v::Vector; replace_string = true, threads = length(v)>500)
+    op = v |> Map(x -> toReal(realtype(x), x, replace_string))
+    if threads
+        return tcollect(op)
+    else
+        return collect(op)
     end
-    v[:] = convert(Vector{T}, v)
 end
+
+toReal(x::Union{S, T, Missing}; replace_string = true) where S <: AbstractString where T <: Real = toReal(realtype(x), x, replace_string)
 
 end
