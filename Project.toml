@@ -12,6 +12,7 @@ Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
+Transducers = "0.4"
 julia = "1.5"
 
 [extras]
