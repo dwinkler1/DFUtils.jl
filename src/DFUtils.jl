@@ -125,4 +125,32 @@ end
 
 toReal(x::Union{S, T, Missing}; replace_string = true) where S <: AbstractString where T <: Real = toReal(realtype(x), x, replace_string)
 
+"""
+    readtypes(U::Union, types = DataType[])
+
+Get a vector of the types of a `Union` type
+"""
+function readtypes(U::Union, types = DataType[])
+    push!(types, getfield(U, :a))
+    if isa(getfield(U, :b), DataType)
+        push!(types, getfield(U, :b))
+        return types
+    else
+        readtypes(U.b, types)
+    end
+end
+
+readtypes(T::DataType) = [T]
+
+"""
+    fixnothing!(df::DataFrame, col::Symbol)
+
+Replace all `nothing` with `missing` in column and remove `Nothing` type.
+"""
+function fixnothing!(df::DataFrame, col::Symbol)
+    allowmissing!(df, col)
+    replace!(df[!, col], nothing => missing)
+    types = readtypes(typeof(df[!, col]))
+    filter!(T -> T != Nothing, types)
+    df[!, col] = convert(Union{types...}, df[!, col])
 end
