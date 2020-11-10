@@ -152,9 +152,7 @@ Replace all `nothing` with `missing` in column and remove `Nothing` type.
 function fixnothing!(df::DataFrame, col::Symbol)
     allowmissing!(df, col)
     replace!(df[!, col], nothing => missing)
-    types = readtypes(typeof(df[!, col]))
-    filter!(T -> T != Nothing, types)
-    df[!, col] = convert(Union{types...}, df[!, col])
+    df[!, col] = convert(Vector{Core.Compiler.typesubtract(eltype(df[!, col]), Nothing)}, df[!, col])
 end
 
 end
