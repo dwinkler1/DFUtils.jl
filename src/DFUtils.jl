@@ -154,3 +154,5 @@ function fixnothing!(df::DataFrame, col::Symbol)
     filter!(T -> T != Nothing, types)
     df[!, col] = convert(Union{types...}, df[!, col])
 end
+
+end
