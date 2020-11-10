@@ -5,8 +5,10 @@ Missings,
 Transducers
 
 export complete, 
-realtype,
-toReal
+    realtype,
+    toReal,
+    fixnothing!,
+    readtypes
 
 """
     complete(df, cols...; replace_missing = missing)
