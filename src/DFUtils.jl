@@ -8,7 +8,8 @@ export complete,
     realtype,
     toReal,
     fixnothing!,
-    readtypes
+    readtypes,
+    dictstodf
 
 """
     complete(df, cols...; replace_missing = missing)
@@ -150,9 +151,27 @@ readtypes(T::DataType) = [T]
 Replace all `nothing` with `missing` in column and remove `Nothing` type.
 """
 function fixnothing!(df::DataFrame, col::Symbol)
-    allowmissing!(df, col)
-    replace!(df[!, col], nothing => missing)
-    df[!, col] = convert(Vector{Core.Compiler.typesubtract(eltype(df[!, col]), Nothing)}, df[!, col])
+    if Nothing ∈ readtypes(df[!, col])
+        allowmissing!(df, col)
+        replace!(df[!, col], nothing => missing)
+        df[!, col] = convert(Vector{Core.Compiler.typesubtract(eltype(df[!, col]), Nothing)}, df[!, col])
+    else
+        return nothing
+    end
 end
+
+"""
+    dictstodf(dicts::Vector{Dict})
+
+Create a DataFrame from a list of `Dict`s.
+"""
+function dictstodf(dicts::Vector{Dict})
+    out = DataFrame()
+    for l in dicts
+        push!(out, l, cols = :union)
+    end
+    return out
+end
+    
 
 end
