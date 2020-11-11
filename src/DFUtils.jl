@@ -165,7 +165,7 @@ end
 
 Create a DataFrame from a list of `Dict`s.
 """
-function dictstodf(dicts::Vector{Dict})
+function dictstodf(dicts)
     out = DataFrame()
     for l in dicts
         push!(out, l, cols = :union)
