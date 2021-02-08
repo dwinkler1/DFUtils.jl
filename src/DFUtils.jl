@@ -150,7 +150,7 @@ readtypes(T::DataType) = [T]
 
 Replace all `nothing` with `missing` in column and remove `Nothing` type.
 """
-function fixnothing!(df::DataFrame, col::Symbol)
+function fixnothing!(df::DataFrame, col)
     if Nothing ∈ readtypes(eltype(df[!, col]))
         allowmissing!(df, col)
         replace!(df[!, col], nothing => missing)
@@ -158,6 +158,11 @@ function fixnothing!(df::DataFrame, col::Symbol)
     else
         return nothing
     end
+end
+
+function fixnothing!(df::DataFrame)
+    [fixnothing!(df, Symbol(col)) for col in names(df)]
+    return nothing
 end
 
 """
